@@ -306,11 +306,27 @@ SymExpr _sym_build_trunc(SymExpr expr, uint8_t bits) {
 
 void _sym_push_path_constraint(SymExpr constraint, int taken,
                                uintptr_t site_id) {
+
+
   if (constraint == nullptr)
     return;
 
+#ifdef WITH_SANITIZER_RUNTIME
+  // printf("\nPush Constaint:%s\n, taken:%d\n", _sym_expr_to_string(constraint), taken);
+  g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id, false);
+#else
   g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id);
+#endif
 }
+
+#ifdef WITH_SANITIZER_RUNTIME
+void _sym_asan_push_path_constraint(SymExpr constraint, int taken, uintptr_t site_id, bool is_memcpy) {
+  if (constraint == nullptr)
+    return;
+
+  g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id, true, is_memcpy);
+}
+#endif
 
 SymExpr _sym_get_input_byte(size_t offset, uint8_t value) {
   g_enhanced_solver->pushInputByte(offset, value);

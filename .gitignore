@@ -44,3 +44,10 @@ compile_commands.json
 
 # Build directories
 build*
+
+
+build
+.vscode
+build-modified
+build-qsym
+build-qsym-san

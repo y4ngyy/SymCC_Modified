@@ -157,7 +157,7 @@ void liftInlineAssembly(CallInst *CI) {
 
 bool instrumentFunction(Function &F) {
   auto functionName = F.getName();
-  if (functionName == kSymCtorName)
+  if (functionName == kSymCtorName || functionName.startswith("sym_asan"))
     return false;
 
   DEBUG(errs() << "Symbolizing function ");

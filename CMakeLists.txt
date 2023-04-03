@@ -43,6 +43,7 @@ set(SYM_RUNTIME_BUILD_ARGS
   -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
   -DCMAKE_SYSROOT=${CMAKE_SYSROOT}
   -DQSYM_BACKEND=${QSYM_BACKEND}
+  -DWITH_SANITIZER_RUNTIME=${WITH_SANITIZER_RUNTIME}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DZ3_TRUST_SYSTEM_VERSION=${Z3_TRUST_SYSTEM_VERSION})
 
@@ -75,7 +76,7 @@ if (${TARGET_32BIT})
   set(SYM_RUNTIME_32BIT_DIR ${BINARY_DIR})
 endif()
 
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 10 REQUIRED CONFIG)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake from ${LLVM_DIR}")
@@ -99,6 +100,9 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,nodelete")
 # This is the compiler pass that we later load into clang or opt. If LLVM is
 # built without RTTI we have to disable it for our library too, otherwise we'll
 # get linker errors.
+option(WITH_SANITIZER "Sanitizer Version" OFF)
+configure_file("compiler/config.h.in" "config.h")
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(Symbolize MODULE
   compiler/Symbolizer.cpp
   compiler/Pass.cpp

@@ -148,8 +148,9 @@ SymExpr _sym_read_memory(uint8_t *addr, size_t length, bool little_endian) {
   if (isConcrete(addr, length))
     return nullptr;
 
+  // printf("Enter Read Memory %p, %ld\n", addr, length);
   ReadOnlyShadow shadow(addr, length);
-  return std::accumulate(shadow.begin_non_null(), shadow.end_non_null(),
+  SymExpr a = std::accumulate(shadow.begin_non_null(), shadow.end_non_null(),
                          static_cast<SymExpr>(nullptr),
                          [&](SymExpr result, SymExpr byteExpr) {
                            if (result == nullptr)
@@ -159,6 +160,8 @@ SymExpr _sym_read_memory(uint8_t *addr, size_t length, bool little_endian) {
                                       ? _sym_concat_helper(byteExpr, result)
                                       : _sym_concat_helper(result, byteExpr);
                          });
+  // printf("Read Memory Expr: %s\n", _sym_expr_to_string(a));
+  return a;
 }
 
 void _sym_write_memory(uint8_t *addr, size_t length, SymExpr expr,
@@ -177,16 +180,21 @@ void _sym_write_memory(uint8_t *addr, size_t length, SymExpr expr,
   ReadWriteShadow shadow(addr, length);
   if (expr == nullptr) {
     std::fill(shadow.begin(), shadow.end(), nullptr);
+    printf("Write Memory expr == null %p, %ld\n", addr, length);
   } else {
     size_t i = 0;
+    // printf("enter Write Memory %p, %ld, %s\n", addr, length, _sym_expr_to_string(expr));
     for (SymExpr &byteShadow : shadow) {
       byteShadow = little_endian
                        ? _sym_extract_helper(expr, 8 * (i + 1) - 1, 8 * i)
                        : _sym_extract_helper(expr, (length - i) * 8 - 1,
                                              (length - i - 1) * 8);
+      // printf("_sym_extract_helper Return: %s,%ld\n", _sym_expr_to_string(expr), i);
       i++;
     }
+    // printf("Write Memory Return\n");
   }
+  // printf("Write Memory Exit\n");
 }
 
 SymExpr _sym_build_extract(SymExpr expr, uint64_t offset, uint64_t length,

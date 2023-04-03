@@ -31,6 +31,7 @@
 
 /* Marker for expression parameters which may be null. */
 #define nullable
+#include "config.h"
 
 #ifdef __cplusplus
 #include <cstddef>
@@ -182,6 +183,10 @@ void _sym_push_path_constraint(nullable SymExpr constraint, int taken,
 SymExpr _sym_get_input_byte(size_t offset, uint8_t concrete_value);
 void _sym_make_symbolic(const void *data, size_t byte_length,
                         size_t input_offset);
+#ifdef WITH_SANITIZER_RUNTIME
+void _sym_asan_push_path_constraint(SymExpr constraint, int taken,
+                               uintptr_t site_id, bool is_memory=false);
+#endif
 
 /*
  * Memory management

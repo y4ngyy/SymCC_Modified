@@ -24,6 +24,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 \
 
 option(QSYM_BACKEND "Use the Qsym backend instead of our own" OFF)
 option(Z3_TRUST_SYSTEM_VERSION "Use the system-provided Z3 without a version check" OFF)
+option(WITH_SANITIZER_RUNTIME "Build runtime with sanitizer interface" OFF)
+
+configure_file("config.h.in" "config.h")
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Place the final product in the top-level output directory
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
