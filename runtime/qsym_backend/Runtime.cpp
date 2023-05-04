@@ -320,11 +320,11 @@ void _sym_push_path_constraint(SymExpr constraint, int taken,
 }
 
 #ifdef WITH_SANITIZER_RUNTIME
-void _sym_asan_push_path_constraint(SymExpr constraint, int taken, uintptr_t site_id, bool is_memcpy) {
+void _sym_asan_push_path_constraint(SymExpr constraint, int taken, uintptr_t site_id) {
   if (constraint == nullptr)
     return;
 
-  g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id, true, is_memcpy);
+  g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id, true);
 }
 #endif
 

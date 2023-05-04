@@ -185,7 +185,7 @@ void _sym_make_symbolic(const void *data, size_t byte_length,
                         size_t input_offset);
 #ifdef WITH_SANITIZER_RUNTIME
 void _sym_asan_push_path_constraint(SymExpr constraint, int taken,
-                               uintptr_t site_id, bool is_memory=false);
+                               uintptr_t site_id);
 #endif
 
 /*

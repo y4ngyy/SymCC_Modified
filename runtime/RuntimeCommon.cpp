@@ -94,6 +94,12 @@ SymExpr _sym_get_return_expression(void) {
 }
 
 void _sym_set_parameter_expression(uint8_t index, SymExpr expr) {
+  // if (index == 1) {
+  //   printf("set_param1:%s\n", expr == nullptr? "NULL":_sym_expr_to_string(expr));
+  // }
+  // if (index == 2) {
+  //   printf("set_param2:%s\n", expr == nullptr? "NULL":_sym_expr_to_string(expr));
+  // }
   g_function_arguments[index] = expr;
 }
 
@@ -180,7 +186,7 @@ void _sym_write_memory(uint8_t *addr, size_t length, SymExpr expr,
   ReadWriteShadow shadow(addr, length);
   if (expr == nullptr) {
     std::fill(shadow.begin(), shadow.end(), nullptr);
-    printf("Write Memory expr == null %p, %ld\n", addr, length);
+    // printf("Write Memory expr == null %p, %ld\n", addr, length);
   } else {
     size_t i = 0;
     // printf("enter Write Memory %p, %ld, %s\n", addr, length, _sym_expr_to_string(expr));
