@@ -30,6 +30,8 @@
 #define RUNTIMECOMMON_H
 
 /* Marker for expression parameters which may be null. */
+#include "Runtime.h"
+#include <dependency.h>
 #define nullable
 #include "config.h"
 
@@ -186,6 +188,9 @@ void _sym_make_symbolic(const void *data, size_t byte_length,
 #ifdef WITH_SANITIZER_RUNTIME
 void _sym_asan_push_path_constraint(SymExpr constraint, int taken,
                                uintptr_t site_id);
+void _sym_asan_insert_symbolic_addr_node(SymExpr value, SymExpr addr, uintptr_t concrete_addr);
+void _sym_asan_constraint_verify(SymExpr value);
+void _sym_asan_test_dependency(SymExpr expr);
 #endif
 
 /*

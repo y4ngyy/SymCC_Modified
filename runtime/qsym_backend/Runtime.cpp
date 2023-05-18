@@ -19,6 +19,11 @@
 
 #include "Runtime.h"
 #include "GarbageCollection.h"
+#include <algorithm>
+#include <cstddef>
+#include <dependency.h>
+#include <expr.h>
+#include <utility>
 
 // C++
 #if __has_include(<filesystem>)
@@ -90,6 +95,10 @@ std::atomic_flag g_initialized = ATOMIC_FLAG_INIT;
 /// std::map seems to perform slightly better than std::unordered_map on our
 /// workload.
 std::map<SymExpr, qsym::ExprRef> allocatedExpressions;
+
+// TODO lack Garbage collection, may cause occupy large memory
+std::unordered_map<qsym::DependencySet*, std::pair<SymExpr, uintptr_t>> g_delay_constraint_queue;
+qsym::DependencySet g_exact_dependencies;
 
 SymExpr registerExpression(const qsym::ExprRef &expr) {
   SymExpr rawExpr = expr.get();
@@ -325,6 +334,43 @@ void _sym_asan_push_path_constraint(SymExpr constraint, int taken, uintptr_t sit
     return;
 
   g_solver->addJcc(allocatedExpressions.at(constraint), taken != 0, site_id, true);
+}
+
+void _sym_asan_test_dependency(SymExpr constraint) {
+  ExprRef node = allocatedExpressions.at(constraint);
+  printf("DependencySet-------\n");
+  for (auto &index : *node->getDependencies()) {
+    printf("%ld\n", index);
+  }
+  printf("DependencySet End-------\n");
+}
+
+void _sym_asan_insert_symbolic_addr_node(SymExpr value, SymExpr addr, uintptr_t concrete_addr) {
+  ExprRef node = allocatedExpressions.at(value);
+  DependencySet *dep = node->getDependencies();
+  if (std::includes(g_exact_dependencies.begin(), g_exact_dependencies.end(), dep->begin(), dep->end())) return;
+  // check for the repeat dependency, may introduce large overhead
+  for(auto iter = g_delay_constraint_queue.begin(); iter != g_delay_constraint_queue.end(); iter++) {
+    DependencySet iter_dep = *iter->first;
+    if (std::includes(iter_dep.begin(), iter_dep.end(), dep->begin(), dep->end())) return;
+  }
+  g_delay_constraint_queue.insert({dep, make_pair(addr, concrete_addr)});
+}
+
+void _sym_asan_constraint_verify(SymExpr expr) {
+  if (g_delay_constraint_queue.empty()) return;
+  ExprRef node = allocatedExpressions.at(expr);
+  DependencySet br_dep = *node->getDependencies(); 
+  for(auto iter = g_delay_constraint_queue.begin(); iter != g_delay_constraint_queue.end(); iter++) {
+    DependencySet dep = *iter->first;
+    if (!std::includes(br_dep.begin(), br_dep.end(), dep.begin(), dep.end())) continue;
+    SymExpr addr_sym = iter->second.first;
+    uintptr_t addr_con = iter->second.second;
+    _sym_push_path_constraint(_sym_build_equal(_sym_build_integer(addr_con, 64), addr_sym), 1, 0);
+    g_exact_dependencies.merge(dep);
+    g_delay_constraint_queue.erase(iter);
+    break;
+  }
 }
 #endif
 
