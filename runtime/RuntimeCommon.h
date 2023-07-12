@@ -190,6 +190,7 @@ void _sym_asan_push_path_constraint(SymExpr constraint, int taken,
                                uintptr_t site_id);
 void _sym_asan_insert_symbolic_addr_node(SymExpr value, SymExpr addr, uintptr_t concrete_addr);
 void _sym_asan_constraint_verify(SymExpr value);
+bool _sym_asan_is_symexpr_exact(SymExpr expr); // not use, but keep this interface
 void _sym_asan_test_dependency(SymExpr expr);
 #endif
 

@@ -372,6 +372,16 @@ void _sym_asan_constraint_verify(SymExpr expr) {
     break;
   }
 }
+
+bool _sym_asan_is_symexpr_exact(SymExpr expr) {
+  if (g_exact_dependencies.empty()) return false;
+  DependencySet dep = *expr->getDependencies();
+  if (std::includes(g_exact_dependencies.begin(), g_exact_dependencies.end(), dep.begin(), dep.end()))
+    return true;
+  else
+    return false;
+}
+
 #endif
 
 SymExpr _sym_get_input_byte(size_t offset, uint8_t value) {
